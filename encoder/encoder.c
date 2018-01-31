@@ -881,6 +881,8 @@ static int x264_validate_parameters( x264_t *h, int b_open )
         return -1;
     }
     h->param.rc.i_vbv_buffer_size = x264_clip3( h->param.rc.i_vbv_buffer_size, 0, 2000000 );
+
+
     h->param.rc.i_vbv_max_bitrate = x264_clip3( h->param.rc.i_vbv_max_bitrate, 0, 2000000 );
     h->param.rc.f_vbv_buffer_init = x264_clip3f( h->param.rc.f_vbv_buffer_init, 0, 2000000 );
     if( h->param.rc.i_vbv_buffer_size )
@@ -907,7 +909,8 @@ static int x264_validate_parameters( x264_t *h, int b_open )
         else if( h->param.rc.i_vbv_max_bitrate < h->param.rc.i_bitrate &&
                  h->param.rc.i_rc_method == X264_RC_ABR )
         {
-            x264_log( h, X264_LOG_WARNING, "max bitrate less than average bitrate, assuming CBR\n" );
+            x264_log( h, X264_LOG_WARNING, "max bitrate %d less than average bitrate %d, assuming CBR\n",
+            h->param.rc.i_vbv_max_bitrate, h->param.rc.i_bitrate);
             h->param.rc.i_bitrate = h->param.rc.i_vbv_max_bitrate;
         }
     }
@@ -1308,6 +1311,10 @@ static int x264_validate_parameters( x264_t *h, int b_open )
     BOOLIFY( rc.b_mb_tree );
     BOOLIFY( rc.b_filler );
 #undef BOOLIFY
+
+    char * param_string = x264_param2string( &h->param, 1 );
+    x264_log(h, X264_LOG_INFO, "#x264 options: %s", param_string);
+    x264_free( param_string );
 
     return 0;
 }
